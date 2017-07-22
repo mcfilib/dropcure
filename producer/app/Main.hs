@@ -43,7 +43,10 @@ server = do
 
 -- SERVER : WEBSOCKETS
 
+ack :: Text
+ack = "ACK"
+
 handleWebSocket :: WS.PendingConnection -> IO ()
 handleWebSocket pending = do
   connection <- WS.acceptRequest pending
-  WS.sendTextData connection ("ACK" :: Text)
+  WS.sendTextData connection ack
