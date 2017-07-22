@@ -3,7 +3,7 @@
 module Main where
 
 import           Control.Concurrent (forkIO)
-import           Control.Monad (forever)
+import           Control.Monad (forever, unless)
 import           Control.Monad.Trans (liftIO)
 import           Data.Maybe (fromMaybe, listToMaybe)
 import           Data.Monoid ((<>))
@@ -24,14 +24,17 @@ main = do
 
 -- CONFIG
 
-ack :: Text
-ack = "ACK"
+hello :: Text
+hello = "HELLO"
+
+goodbye :: Text
+goodbye = "GOODBYE"
 
 defaultAddress :: String
 defaultAddress = "127.0.0.1"
 
 defaultPort :: Int
-defaultPort = 5000
+defaultPort = 8000
 
 getAddress :: IO String
 getAddress =
@@ -64,13 +67,9 @@ serverConnection pending = do
   serverConnected
   connection <- WS.acceptRequest pending
   serverAccepted
-  WS.sendTextData connection ack
+  WS.sendTextData connection hello
 
 -- SERVER : LOGGING
-
-serverStarting :: String -> Int -> IO ()
-serverStarting address port = putStrLn $
-  "Server starting on: " <> address <> ":" <> (show port)
 
 serverAccepted :: IO ()
 serverAccepted = putStrLn "Server accepted"
@@ -78,10 +77,14 @@ serverAccepted = putStrLn "Server accepted"
 serverConnected :: IO ()
 serverConnected = putStrLn "Client connected"
 
+serverStarting :: String -> Int -> IO ()
+serverStarting address port = putStrLn $
+  "Server starting on: " <> address <> ":" <> (show port)
+
 -- CLIENT
 
 client :: IO ()
-client = withSocketsDo $ do
+client = do
   address <- getAddress
   port    <- getPort
   WS.runClient address port "/" clientConnection
@@ -91,10 +94,8 @@ client = withSocketsDo $ do
 clientConnection :: WS.ClientApp ()
 clientConnection connection = do
   clientConnected
-  _ <- forkIO $ forever $ do
-    message <- WS.receiveData connection
-    liftIO $ T.putStrLn message
-  return ()
+  message <- WS.receiveData connection
+  liftIO $ T.putStrLn message
 
 -- CLIENT : LOGGING
 
