@@ -8,10 +8,7 @@ import qualified Network.WebSockets as WS
 import           System.Environment (lookupEnv)
 
 main :: IO ()
-main = do
-  address <- getAddress
-  port    <- getPort
-  WS.runServer address port handleWebSocket
+main = server
 
 -- CONFIG
 
@@ -35,6 +32,14 @@ getConfig key fallback = do
   return $ case maybeEnv of
     Just string -> read string
     Nothing     -> fallback
+
+-- SERVER
+
+server :: IO ()
+server = do
+  address <- getAddress
+  port    <- getPort
+  WS.runServer address port handleWebSocket
 
 -- SERVER : WEBSOCKETS
 
