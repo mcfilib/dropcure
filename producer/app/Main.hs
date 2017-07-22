@@ -2,7 +2,7 @@
 
 module Main where
 
-import           Control.Concurrent (forkIO)
+import           Control.Concurrent (forkIO, threadDelay)
 import           Control.Monad (forever, unless)
 import           Control.Monad.Trans (liftIO)
 import           Data.Maybe (fromMaybe, listToMaybe)
@@ -90,7 +90,7 @@ serverStarting address port = putStrLn $
 -- CLIENT
 
 client :: IO ()
-client = do
+client = withSocketsDo $ do
   address <- getAddress
   port    <- getPort
   WS.runClient address port "/" clientConnection
@@ -105,6 +105,7 @@ clientConnection connection = do
   T.putStrLn message
   -- Keep sending goodbye over and over
   forkIO $ forever $ do
+    threadDelay (5 * (10 ^ 6))
     WS.sendTextData connection goodbye
   -- Keep printing received data to the console
   forever $ do
