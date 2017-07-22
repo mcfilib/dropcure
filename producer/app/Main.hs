@@ -36,9 +36,9 @@ getConfig key fallback = do
     Just string -> read string
     Nothing     -> fallback
 
--- WEBSOCKETS
+-- SERVER : WEBSOCKETS
 
 handleWebSocket :: WS.PendingConnection -> IO ()
 handleWebSocket pending = do
   connection <- WS.acceptRequest pending
-  WS.sendTextData connection ("Ciao" :: Text)
+  WS.sendTextData connection ("ACK" :: Text)
