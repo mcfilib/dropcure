@@ -3,6 +3,7 @@
 module Main where
 
 import           Data.Maybe (fromMaybe)
+import           Data.Text (Text)
 import qualified Network.WebSockets as WS
 import           System.Environment (lookupEnv)
 
