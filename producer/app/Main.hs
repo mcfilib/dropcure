@@ -65,9 +65,15 @@ server = do
 serverConnection :: WS.PendingConnection -> IO ()
 serverConnection pending = do
   serverConnected
+  -- Accept the connection
   connection <- WS.acceptRequest pending
   serverAccepted
+  -- Send a greeting message
   WS.sendTextData connection hello
+  -- Keep sending whatever we receive over and over again
+  forever $ do
+    WS.Text message _ <- WS.receiveDataMessage connection
+    WS.sendTextData connection message
 
 -- SERVER : LOGGING
 
@@ -94,8 +100,16 @@ client = do
 clientConnection :: WS.ClientApp ()
 clientConnection connection = do
   clientConnected
+  -- Receive greeting message
   message <- WS.receiveData connection
-  liftIO $ T.putStrLn message
+  T.putStrLn message
+  -- Keep sending goodbye over and over
+  forkIO $ forever $ do
+    WS.sendTextData connection goodbye
+  -- Keep printing received data to the console
+  forever $ do
+    WS.Text message _ <- WS.receiveDataMessage connection
+    putStrLn $ show message
 
 -- CLIENT : LOGGING
 
