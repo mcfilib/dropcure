@@ -35,7 +35,7 @@ server = setupRabbit >>= setupWebSocketServer
 
     serverStarting :: String -> Int -> IO ()
     serverStarting address port = putStrLn $
-      "Server starting on: " <> address <> ":" <> (show port)
+      "server starting on: " <> address <> ":" <> (show port)
 
 --------------------------------------------------------------------------------
 

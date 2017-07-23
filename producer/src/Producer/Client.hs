@@ -35,7 +35,7 @@ clientConnection connection = do
   where
     clientConnected :: IO ()
     clientConnected =
-      putStrLn "Connected"
+      putStrLn "connected"
 
     heartBeat :: Text
     heartBeat =
@@ -48,13 +48,13 @@ clientConnection connection = do
 
     sendHeartBeat :: IO ()
     sendHeartBeat = do
-      sleep 5
+      sleep 10
       sendingHeartbeat
       WS.sendPing connection heartBeat
 
     sendToQueue :: IO ()
     sendToQueue = do
-      sleep 1
+      sleep 5
       sendingToQueue
       WS.sendTextData connection heartBeat
 
@@ -64,7 +64,7 @@ clientConnection connection = do
 
     sendingToQueue :: IO ()
     sendingToQueue =
-      putStrLn "Sending to queue..."
+      putStrLn "sending to queue"
 
     sleep :: Int -> IO ()
     sleep x =
