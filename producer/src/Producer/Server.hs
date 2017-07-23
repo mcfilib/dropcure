@@ -55,10 +55,12 @@ handleConnection rabbitConfig@RabbitConfig{..} pendingConnection = do
   channel    <- setupChannel
   forever (publishFromWStoRabbit connection channel)
   where
+    publishFromWStoRabbit :: WS.Connection -> AMQ.Channel -> IO ()
     publishFromWStoRabbit connection channel = do
       WS.Text message _ <- WS.receiveDataMessage connection
       AMQ.publishMsg channel rabbitExchange rabbitKey $
         AMQ.newMsg { AMQ.msgBody = message, AMQ.msgDeliveryMode = Just AMQ.Persistent }
+      return ()
 
     setupChannel :: IO AMQ.Channel
     setupChannel = do
