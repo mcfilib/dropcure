@@ -10,6 +10,26 @@ import           System.Environment (getArgs, lookupEnv)
 
 import           Producer.Types
 
+getWsConfig :: IO WSConfig
+getWsConfig = do
+  address <- getAddress
+  port    <- getPort
+  return $ WSConfig address port
+
+getRabbitConfig :: IO RabbitConfig
+getRabbitConfig = do
+  address  <- getRabbitAddress
+  username <- getRabbitUsername
+  password <- getRabbitPassword
+  exchange <- getRabbitExchange
+  key      <- getRabbitKey
+  queue    <- getRabbitQueue
+  return $ RabbitConfig address username password exchange key queue
+
+--------------------------------------------------------------------------------
+
+-- DEFAULTS
+
 defaultAddress :: String
 defaultAddress =
   "127.0.0.1"
@@ -44,37 +64,56 @@ defaultRabbitQueue =
 
 -- CONFIG : ENV
 
+-- | Websocket server address.
 getAddress :: IO String
 getAddress =
   getConfig "PRODUCER_ADDRESS" defaultAddress
 
+-- | Websocket server port.
 getPort :: IO Int
 getPort =
   getConfig "PRODUCER_PORT" defaultPort
 
+-- | Rabbit server address.
 getRabbitAddress :: IO String
 getRabbitAddress =
   getConfig "RABBIT_ADDRESS" defaultRabbitAddress
 
+-- | Rabbit server username.
 getRabbitUsername :: IO Text
 getRabbitUsername =
-  getConfig "RABBIT_USERNAME" defaultRabbitUsername >>= return . T.pack
+  convertToText =<<
+    getConfig "RABBIT_USERNAME" defaultRabbitUsername
 
+-- | Rabbit server password.
 getRabbitPassword :: IO Text
 getRabbitPassword =
-  getConfig "RABBIT_PASSWORD" defaultRabbitPassword >>= return . T.pack
+  convertToText =<<
+    getConfig "RABBIT_PASSWORD" defaultRabbitPassword
 
+-- | Rabbit server exchange name.
 getRabbitExchange :: IO Text
 getRabbitExchange =
-  getConfig "RABBIT_EXCHANGE" defaultRabbitExchange >>= return . T.pack
+  convertToText =<<
+    getConfig "RABBIT_EXCHANGE" defaultRabbitExchange
 
+-- | Rabbit server key.
 getRabbitKey :: IO Text
 getRabbitKey =
-  getConfig "RABBIT_KEY" defaultRabbitKey >>= return . T.pack
+  convertToText =<<
+    getConfig "RABBIT_KEY" defaultRabbitKey
 
+-- | Rabbit server queue name.
 getRabbitQueue :: IO Text
 getRabbitQueue =
-  getConfig "RABBIT_QUEUE" defaultRabbitQueue >>= return . T.pack
+  convertToText =<<
+    getConfig "RABBIT_QUEUE" defaultRabbitQueue
+
+-- UTILITY
+
+convertToText :: String -> IO Text
+convertToText =
+  return . T.pack
 
 getConfig :: Read a => String -> a -> IO a
 getConfig key fallback = do
@@ -82,19 +121,3 @@ getConfig key fallback = do
   return $ case maybeEnv of
     Just string -> read string
     Nothing     -> fallback
-
-getWsConfig :: IO WSConfig
-getWsConfig = do
-  address <- getAddress
-  port    <- getPort
-  return $ WSConfig address port
-
-getRabbitConfig :: IO RabbitConfig
-getRabbitConfig = do
-  address  <- getRabbitAddress
-  username <- getRabbitUsername
-  password <- getRabbitPassword
-  exchange <- getRabbitExchange
-  key      <- getRabbitKey
-  queue    <- getRabbitQueue
-  return $ RabbitConfig address username password exchange key queue

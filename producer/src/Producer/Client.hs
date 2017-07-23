@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Producer.Client where
 
@@ -14,18 +15,22 @@ import qualified Network.WebSockets as WS
 -- INTERNAL
 
 import           Producer.Config
+import           Producer.Types
 
 client :: IO ()
 client = withSocketsDo $ do
-  address <- getAddress
-  port    <- getPort
-  WS.runClient address port "/" clientConnection
+  WSConfig{..} <- getWsConfig
+  WS.runClient wsAddress wsPort "/" clientConnection
 
+--------------------------------------------------------------------------------
+
+-- | Test client that continually publishes messages to the queue on a fixed
+-- interval.
 clientConnection :: WS.ClientApp ()
 clientConnection connection = do
   _ <- clientConnected
   _ <- receiveAndPrintGreeting
-  forkIO $ forever sendToQueue
+  forkIO $ forever $ sendToQueue
   forever sendHeartBeat
   where
     clientConnected :: IO ()
