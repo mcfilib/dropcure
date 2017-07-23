@@ -5,3 +5,7 @@ services:
     ports:
       - "5672:5672"
       - "8080:15672"
+  producer:
+    image: producer:latest
+    ports:
+      - "8000:8000"
