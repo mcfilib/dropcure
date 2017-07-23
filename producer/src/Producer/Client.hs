@@ -23,22 +23,33 @@ client = withSocketsDo $ do
 
 clientConnection :: WS.ClientApp ()
 clientConnection connection = do
-  clientConnected
-  -- Receive greeting message
-  message <- WS.receiveData connection
-  T.putStrLn message
-  -- Keep sending goodbye over and over
-  forkIO $ forever $ do
-    sleep 1
-    WS.sendTextData connection ("GOODBYE" :: Text)
-  -- Keep printing received data to the console
-  forever $ do
-    sleep 5
-    WS.sendPing connection ("PING" :: Text)
+  _ <- clientConnected
+  _ <- receiveAndPrintGreeting
+  forkIO $ forever sendToQueue
+  forever sendHeartBeat
   where
+    clientConnected :: IO ()
+    clientConnected =
+      putStrLn "Connected"
+
+    heartBeat :: Text
+    heartBeat =
+      "beep"
+
+    receiveAndPrintGreeting = do
+      message <- WS.receiveData connection
+      T.putStrLn message
+
+    sendHeartBeat :: IO ()
+    sendHeartBeat = do
+      sleep 5
+      WS.sendPing connection heartBeat
+
+    sendToQueue :: IO ()
+    sendToQueue = do
+      sleep 1
+      WS.sendTextData connection heartBeat
+
     sleep :: Int -> IO ()
     sleep x =
       threadDelay (x * (10 ^ 6))
-
-clientConnected :: IO ()
-clientConnected = putStrLn "Connected"
