@@ -49,12 +49,22 @@ clientConnection connection = do
     sendHeartBeat :: IO ()
     sendHeartBeat = do
       sleep 5
+      sendingHeartbeat
       WS.sendPing connection heartBeat
 
     sendToQueue :: IO ()
     sendToQueue = do
       sleep 1
+      sendingToQueue
       WS.sendTextData connection heartBeat
+
+    sendingHeartbeat :: IO ()
+    sendingHeartbeat =
+      T.putStrLn heartBeat
+
+    sendingToQueue :: IO ()
+    sendingToQueue =
+      putStrLn "Sending to queue..."
 
     sleep :: Int -> IO ()
     sleep x =
