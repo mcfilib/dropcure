@@ -41,6 +41,7 @@ clientConnection connection = do
     heartBeat =
       "beep"
 
+    receiveAndPrintGreeting :: IO ()
     receiveAndPrintGreeting = do
       message <- WS.receiveData connection
       T.putStrLn message
