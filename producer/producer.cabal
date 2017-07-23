@@ -22,6 +22,8 @@ executable producer
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
+                     , amqp
+                     , bytestring
                      , mtl
                      , network
                      , producer
