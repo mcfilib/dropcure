@@ -21,10 +21,11 @@ server = setupRabbit >>= setupWebSocketServer
   where
     setupRabbit :: IO RabbitConfig
     setupRabbit = do
-      rabbitConfig <- getRabbitConfig
-      channel      <- createRabbitChannel rabbitConfig
-      _            <- setupExchange rabbitConfig channel
-      _            <- setupQueue rabbitConfig channel
+      rabbitConfig          <- getRabbitConfig
+      (connection, channel) <- createRabbitChannel rabbitConfig
+      _                     <- setupExchange rabbitConfig channel
+      _                     <- setupQueue rabbitConfig channel
+      _                     <- AMQ.closeConnection connection
       return rabbitConfig
 
     setupWebSocketServer :: RabbitConfig -> IO ()
@@ -40,11 +41,11 @@ server = setupRabbit >>= setupWebSocketServer
 --------------------------------------------------------------------------------
 
 -- | Opens a new connection to Rabbit and creates a new channel.
-createRabbitChannel :: RabbitConfig -> IO AMQ.Channel
+createRabbitChannel :: RabbitConfig -> IO (AMQ.Connection, AMQ.Channel)
 createRabbitChannel RabbitConfig{..} = do
   connection <- AMQ.openConnection rabbitAddress "/" rabbitUsername rabbitPassword
   channel    <- AMQ.openChannel connection
-  return channel
+  return (connection, channel)
 
 -- | Handles an incoming Websocket connection and publishes incoming messages to
 -- the queue.
@@ -64,8 +65,8 @@ handleConnection rabbitConfig@RabbitConfig{..} pendingConnection = do
 
     setupChannel :: IO AMQ.Channel
     setupChannel = do
-      channel <- createRabbitChannel rabbitConfig
-      _       <- AMQ.bindQueue channel rabbitQueue rabbitExchange rabbitKey
+      (_, channel) <- createRabbitChannel rabbitConfig
+      _            <- AMQ.bindQueue channel rabbitQueue rabbitExchange rabbitKey
       return channel
 
     sendGreeting :: WS.Connection -> IO ()
