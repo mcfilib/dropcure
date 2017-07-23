@@ -1,6 +1,6 @@
 name:                producer
 version:             0.1.0.0
-homepage:            https://github.com/filib/graham/producer
+homepage:            https://github.com/filib/dropcure/producer
 license:             BSD3
 license-file:        LICENSE
 author:              Philip Cunningham
@@ -14,7 +14,10 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Lib
+                     , Producer.Config
+                     , Producer.Types
   build-depends:       base >= 4.7 && < 5
+                     , text
   default-language:    Haskell2010
 
 executable producer
@@ -42,4 +45,4 @@ test-suite producer-test
 
 source-repository head
   type:     git
-  location: https://github.com/filib/graham/producer
+  location: https://github.com/filib/dropcure/producer
