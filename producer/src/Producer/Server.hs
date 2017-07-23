@@ -6,6 +6,7 @@ module Producer.Server where
 -- EXTERNAL
 
 import           Control.Monad (forever)
+import qualified Control.Retry as Retry
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Network.AMQP as AMQ
@@ -17,16 +18,22 @@ import           Producer.Config
 import           Producer.Types
 
 server :: IO ()
-server = setupRabbit >>= setupWebSocketServer
+server = do
+  rabbitConfig <- getRabbitConfig
+  attemptTo $ setupRabbit rabbitConfig
+  setupWebSocketServer rabbitConfig
   where
-    setupRabbit :: IO RabbitConfig
-    setupRabbit = do
-      rabbitConfig          <- getRabbitConfig
+    attemptTo :: (Retry.RetryStatus -> IO a) -> IO a
+    attemptTo =
+      Retry.recoverAll (Retry.fibonacciBackoff 500000 <> Retry.limitRetries 10)
+
+    setupRabbit :: RabbitConfig -> a -> IO ()
+    setupRabbit rabbitConfig _ = do
+      putStrLn "establishing connection with rabbitmq"
       (connection, channel) <- createRabbitChannel rabbitConfig
       _                     <- setupExchange rabbitConfig channel
       _                     <- setupQueue rabbitConfig channel
-      _                     <- AMQ.closeConnection connection
-      return rabbitConfig
+      AMQ.closeConnection connection
 
     setupWebSocketServer :: RabbitConfig -> IO ()
     setupWebSocketServer rabbitConfig = do
