@@ -32,7 +32,7 @@ getRabbitConfig = do
 
 defaultAddress :: String
 defaultAddress =
-  "127.0.0.1"
+  "0.0.0.0"
 
 defaultPort :: Int
 defaultPort =

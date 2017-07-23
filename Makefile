@@ -5,7 +5,7 @@ clean: ## Clean up build artefacts
 
 build: clean install ## Build producer and consumer Docker containers
 	@cp ~/.local/bin/producer ./producer/tmp
-	@cd ./producer && docker build --rm -t producer .
+	@cd ./producer && docker build --no-cache --rm -t producer .
 
 install: ## Compile producer and consumer
 	@cd ./producer && stack install
