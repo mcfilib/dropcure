@@ -1,5 +1,7 @@
 module Main where
 
+import System.IO (BufferMode(..), hSetBuffering, stdout)
+
 -- EXTERNAL
 
 import Data.Maybe (listToMaybe)
@@ -14,6 +16,7 @@ import Producer.Types
 
 main :: IO ()
 main = do
+  hSetBuffering stdout LineBuffering
   args <- getArgs
   case listToMaybe args of
     Just "client" ->

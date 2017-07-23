@@ -72,7 +72,7 @@ getAddress =
 -- | Websocket server port.
 getPort :: IO Int
 getPort =
-  getConfig "PRODUCER_PORT" defaultPort
+  getConfigInt "PRODUCER_PORT" defaultPort
 
 -- | Rabbit server address.
 getRabbitAddress :: IO String
@@ -115,8 +115,15 @@ convertToText :: String -> IO Text
 convertToText =
   return . T.pack
 
-getConfig :: Read a => String -> a -> IO a
+getConfig :: String -> String -> IO String
 getConfig key fallback = do
+  maybeEnv <- lookupEnv key
+  return $ case maybeEnv of
+    Just string -> string
+    Nothing     -> fallback
+
+getConfigInt :: String -> Int -> IO Int
+getConfigInt key fallback = do
   maybeEnv <- lookupEnv key
   return $ case maybeEnv of
     Just string -> read string

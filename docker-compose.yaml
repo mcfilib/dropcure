@@ -9,3 +9,7 @@ services:
     image: producer:latest
     ports:
       - "8000:8000"
+    depends_on:
+      - "broker"
+    environment:
+      - RABBIT_ADDRESS=172.19.0.1
