@@ -29,7 +29,7 @@ client = withSocketsDo $ do
 clientConnection :: WS.ClientApp ()
 clientConnection connection = do
   _ <- clientConnected
-  _ <- receiveAndPrintGreeting
+  _ <- printHandshake
   _ <- forkIO $ forever $ sendToQueue
   forever sendHeartBeat
   where
@@ -41,8 +41,8 @@ clientConnection connection = do
     heartBeat =
       "beep"
 
-    receiveAndPrintGreeting :: IO ()
-    receiveAndPrintGreeting = do
+    printHandshake :: IO ()
+    printHandshake = do
       message <- WS.receiveData connection
       T.putStrLn message
 

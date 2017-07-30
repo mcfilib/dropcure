@@ -7,7 +7,7 @@ module Consumer.Server where
 
 import           Control.Concurrent (MVar, newMVar, modifyMVar_, readMVar)
 import           Control.Exception (finally)
-import           Control.Monad (forM_)
+import           Control.Monad (forever, forM_)
 import qualified Control.Retry as Retry
 import           Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as BL
@@ -15,6 +15,7 @@ import qualified Data.Map.Strict as DM
 import           Data.Monoid ((<>))
 import           Data.Monoid (mempty)
 import           Data.Text (Text)
+import qualified Data.Text.IO as Text
 import           Data.Unique (Unique, newUnique)
 import qualified Network.AMQP as AMQ
 import           Network.HTTP.Types (status400)
@@ -110,23 +111,29 @@ broadcast message clients = do
 handleConnection :: MVar ServerState -> WS.ServerApp
 handleConnection state pending = do
     connection <- WS.acceptRequest pending
-    _          <- addKeepAlive connection
+    _          <- sendHandshake connection
     uniqueID   <- newUnique
+    putStrLn "client connected"
     finally (addListener uniqueID connection) (removeListenever uniqueID)
     where
-      addKeepAlive :: WS.Connection -> IO ()
-      addKeepAlive connection =
-        WS.forkPingThread connection 30
-
       addListener :: Unique -> WS.Connection -> IO ()
       addListener uniqueID connection = do
+        putStrLn "added listener"
         modifyMVar_ state $ \oldState ->
           return (addClient (uniqueID, connection) oldState)
+        forever $ do
+          message <- WS.receiveData connection
+          Text.putStrLn message
 
       removeListenever :: Unique -> IO ()
       removeListenever uniqueID = do
+        putStrLn "removed listener"
         modifyMVar_ state $ \oldState -> do
           return (removeClient uniqueID oldState)
+
+      sendHandshake :: WS.Connection -> IO ()
+      sendHandshake connection =
+        WS.sendTextData connection ("handshake" :: Text)
 
 -- RABBIT
 

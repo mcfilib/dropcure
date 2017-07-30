@@ -69,7 +69,7 @@ createRabbitChannel RabbitConfig{..} = do
 handleConnection :: RabbitConfig -> WS.ServerApp
 handleConnection rabbitConfig@RabbitConfig{..} pendingConnection = do
   connection <- WS.acceptRequest pendingConnection
-  _          <- sendGreeting connection
+  _          <- sendHandshake connection
   channel    <- setupChannel
   forever (publishFromWStoRabbit connection channel)
   where
@@ -86,9 +86,9 @@ handleConnection rabbitConfig@RabbitConfig{..} pendingConnection = do
       _            <- AMQ.bindQueue channel rabbitQueue rabbitExchange rabbitKey
       return channel
 
-    sendGreeting :: WS.Connection -> IO ()
-    sendGreeting connection =
-      WS.sendTextData connection ("hello" :: Text)
+    sendHandshake :: WS.Connection -> IO ()
+    sendHandshake connection =
+      WS.sendTextData connection ("handshake" :: Text)
 
 -- | Sets up new exchange if it doesn't exist.
 setupExchange :: RabbitConfig -> AMQ.Channel -> IO ()
