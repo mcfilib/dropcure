@@ -25,8 +25,8 @@ import qualified Network.WebSockets as WS
 
 -- INTERNAL
 
-import           Consumer.Config
-import           Consumer.Types
+import           Common.Config
+import           Common.Types
 
 server :: IO ()
 server = do

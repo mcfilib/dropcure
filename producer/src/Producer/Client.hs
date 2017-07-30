@@ -14,8 +14,8 @@ import qualified Network.WebSockets as WS
 
 -- INTERNAL
 
-import           Producer.Config
-import           Producer.Types
+import           Common.Config
+import           Common.Types
 
 client :: IO ()
 client = withSocketsDo $ do

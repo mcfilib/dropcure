@@ -14,12 +14,11 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Producer.Client
-                     , Producer.Config
                      , Producer.Server
-                     , Producer.Types
   build-depends:       base >= 4.7 && < 5
                      , amqp
                      , bytestring
+                     , common
                      , http-types
                      , mtl
                      , network
@@ -37,6 +36,7 @@ executable producer
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
+                     , common
                      , producer
   default-language:    Haskell2010
 

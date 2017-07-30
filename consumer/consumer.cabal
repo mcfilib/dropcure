@@ -13,12 +13,11 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Consumer.Config
-                     , Consumer.Server
-                     , Consumer.Types
+  exposed-modules:     Consumer.Server
   build-depends:       base >= 4.7 && < 5
                      , amqp
                      , bytestring
+                     , common
                      , containers
                      , http-types
                      , retry

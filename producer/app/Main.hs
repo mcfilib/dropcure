@@ -9,10 +9,10 @@ import System.Environment (getArgs)
 
 -- INTERNAL
 
+import Common.Config
+import Common.Types
 import Producer.Client
-import Producer.Config
 import Producer.Server
-import Producer.Types
 
 main :: IO ()
 main = do

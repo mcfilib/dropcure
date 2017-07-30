@@ -37,6 +37,14 @@ resolver: lts-9.0
 # will not be run. This is useful for tweaking upstream packages.
 packages:
 - '.'
+
+# Load some packages from Github.
+- location:
+    git: git@github.com:filib/dropcure
+    commit: 39c983d8b01afa7517219169a0139434eb4eb62c
+  subdirs:
+    - common
+
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps:
