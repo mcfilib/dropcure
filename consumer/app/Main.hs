@@ -16,47 +16,46 @@ import qualified Network.WebSockets as WS
 
 type Client = (Unique, WS.Connection)
 
-type ServerState = [Client]
+type ServerState = DM.Map Unique WS.Connection
 
 newServerState :: ServerState
 newServerState =
   mempty
 
 addClient :: Client -> ServerState -> ServerState
-addClient client clients =
-  client : clients
+addClient (uniqueID, connection) serverState =
+  DM.insert uniqueID connection serverState
 
-removeClient :: Client -> ServerState -> ServerState
-removeClient client =
-  filter ((/= fst client) . fst)
+removeClient :: Unique -> ServerState -> ServerState
+removeClient uniqueID serverState =
+  DM.delete uniqueID serverState
 
 broadcast :: Text -> ServerState -> IO ()
 broadcast message clients = do
-    forM_ clients $ \(_, conn) ->
-      WS.sendTextData conn message
+    forM_ clients $ \connection ->
+      WS.sendTextData connection message
 
 app :: MVar ServerState -> WS.ServerApp
 app state pending = do
     connection <- WS.acceptRequest pending
     _          <- addKeepAlive connection
-    newID      <- newUnique
-    finally (addListener newID connection) (removeListenever newID connection)
+    uniqueID   <- newUnique
+    finally (addListener uniqueID connection) (removeListenever uniqueID connection)
     where
       addKeepAlive :: WS.Connection -> IO ()
       addKeepAlive connection =
         WS.forkPingThread connection 30
 
       addListener :: Unique -> WS.Connection -> IO ()
-      addListener newID connection = do
+      addListener uniqueID connection = do
         modifyMVar_ state $ \oldState ->
-          return (addClient (newID, connection) oldState)
-        listen connection state (newID, connection)
+          return (addClient (uniqueID, connection) oldState)
+        listen connection state (uniqueID, connection)
 
       removeListenever :: Unique -> WS.Connection -> IO ()
-      removeListenever newID connection = do
+      removeListenever uniqueID connection = do
         modifyMVar_ state $ \oldState -> do
-          return (removeClient (newID, connection) oldState)
-
+          return (removeClient uniqueID oldState)
 
 
 listen :: WS.Connection -> MVar ServerState -> Client -> IO ()
