@@ -23,9 +23,6 @@ client = withSocketsDo $ do
 
 --------------------------------------------------------------------------------
 
-class Monad m => Client m where
-  receiveData :: WS.Connection -> m Text
-
 -- | Test client that continually receives messages from the consumer service.
 clientConnection :: WS.ClientApp ()
 clientConnection connection = do
