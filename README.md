@@ -22,7 +22,7 @@ The `producer` server operates as follows:
 - Connect to RabbmitMQ server and create queue and channel if it doesn't exist.
 - Disconnect from RabbitMQ.
 - On new websocket connection:
-  - Connect to RammitMQ.
+  - Connect to RabbitMQ.
   - Send handshake message.
   - Repeatedly publish any message to RabbitMQ.
 
