@@ -5,19 +5,16 @@ module Consumer.Server where
 
 -- EXTERNAL
 
-import           Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, readMVar)
+import           Control.Concurrent (MVar, newMVar, modifyMVar_, readMVar)
 import           Control.Exception (finally)
-import           Control.Monad (forM_, forever)
+import           Control.Monad (forM_)
 import qualified Control.Retry as Retry
 import           Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as BL
-import           Data.Char (isPunctuation, isSpace)
 import qualified Data.Map.Strict as DM
 import           Data.Monoid ((<>))
-import           Data.Monoid (mempty, mappend)
+import           Data.Monoid (mempty)
 import           Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import           Data.Unique (Unique, newUnique)
 import qualified Network.AMQP as AMQ
 import           Network.HTTP.Types (status400)
@@ -37,9 +34,9 @@ server = do
   state        <- newMVar newServerState
   channel      <- attemptTo (setupRabbit rabbitConfig)
   _            <- subscribeToRabbit channel rabbitConfig state
-  setupWebSocketServer rabbitConfig state
+  setupWebSocketServer state
   where
-    app :: RabbitConfig -> MVar ServerState -> WS.ServerApp
+    app :: MVar ServerState -> WS.ServerApp
     app = handleConnection
 
     appFallback :: Wai.Application
@@ -53,81 +50,85 @@ server = do
     setupRabbit :: RabbitConfig -> a -> IO AMQ.Channel
     setupRabbit rabbitConfig _ = do
       putStrLn "establishing connection with rabbitmq"
-      (connection, channel) <- createRabbitChannel rabbitConfig
-      _                     <- setupExchange rabbitConfig channel
-      _                     <- setupQueue rabbitConfig channel
+      (_, channel) <- createRabbitChannel rabbitConfig
+      _            <- setupExchange rabbitConfig channel
+      _            <- setupQueue rabbitConfig channel
       return channel
 
     subscribeToRabbit :: AMQ.Channel -> RabbitConfig -> MVar ServerState -> IO ()
-    subscribeToRabbit channel rabbitConfig@RabbitConfig{..} state = do
-      AMQ.consumeMsgs channel rabbitQueue AMQ.Ack callback
+    subscribeToRabbit channel RabbitConfig{..} state = do
+      putStrLn "subscribing to rabbitmq queue"
+      _ <- AMQ.consumeMsgs channel rabbitQueue AMQ.Ack callback
       return ()
       where
         callback :: (AMQ.Message, AMQ.Envelope) -> IO ()
         callback (message, envelope) = do
-          putStrLn $ "received message: " ++ (BL.unpack $ AMQ.msgBody message)
+          putStrLn $ "message from rabbitmq: " ++ (BL.unpack $ AMQ.msgBody message)
           readMVar state >>= broadcast (AMQ.msgBody message)
           AMQ.ackEnv envelope
 
-    setupWebSocketServer :: RabbitConfig -> MVar ServerState -> IO ()
-    setupWebSocketServer rabbitConfig state = do
+    setupWebSocketServer :: MVar ServerState -> IO ()
+    setupWebSocketServer state = do
       WSConfig{..} <- getWsConfig
-      Warp.run wsPort (WaiWS.websocketsOr WS.defaultConnectionOptions (app rabbitConfig state) appFallback)
+      serverStarting wsAddress wsPort
+      Warp.run wsPort (WaiWS.websocketsOr WS.defaultConnectionOptions (app state) appFallback)
 
--- SERVER STATE
+    serverStarting :: String -> Int -> IO ()
+    serverStarting address port = putStrLn $
+      "server starting on: " <> address <> ":" <> (show port)
 
-type Client = (Unique, WS.Connection)
+--------------------------------------------------------------------------------
 
-type ServerState = DM.Map Unique WS.Connection
+type Client =
+  (Unique, WS.Connection)
 
+type ServerState =
+  DM.Map Unique WS.Connection
+
+-- | Creates an empty server state.
 newServerState :: ServerState
 newServerState =
   mempty
 
+-- | Adds a client to the server state.
 addClient :: Client -> ServerState -> ServerState
 addClient (uniqueID, connection) serverState =
   DM.insert uniqueID connection serverState
 
+-- | Removes a client from the server state.
 removeClient :: Unique -> ServerState -> ServerState
 removeClient uniqueID serverState =
   DM.delete uniqueID serverState
 
--- WEBSOCKETS
-
+-- | Broadcast a message to all connected clients.
 broadcast :: ByteString -> ServerState -> IO ()
 broadcast message clients = do
     forM_ clients $ \connection ->
       WS.sendTextData connection message
 
-handleConnection :: RabbitConfig -> MVar ServerState -> WS.ServerApp
-handleConnection rabbitConfig@RabbitConfig{..} state pending = do
+-- | Registers a websocket with the server state.
+handleConnection :: MVar ServerState -> WS.ServerApp
+handleConnection state pending = do
     connection <- WS.acceptRequest pending
     _          <- addKeepAlive connection
     uniqueID   <- newUnique
-    channel    <- setupChannel
-    finally (addListener uniqueID connection channel) (removeListenever uniqueID connection)
+    finally (addListener uniqueID connection) (removeListenever uniqueID)
     where
       addKeepAlive :: WS.Connection -> IO ()
       addKeepAlive connection =
         WS.forkPingThread connection 30
 
-      addListener :: Unique -> WS.Connection -> AMQ.Channel -> IO ()
-      addListener uniqueID connection channel = do
+      addListener :: Unique -> WS.Connection -> IO ()
+      addListener uniqueID connection = do
         modifyMVar_ state $ \oldState ->
           return (addClient (uniqueID, connection) oldState)
 
-      removeListenever :: Unique -> WS.Connection -> IO ()
-      removeListenever uniqueID connection = do
+      removeListenever :: Unique -> IO ()
+      removeListenever uniqueID = do
         modifyMVar_ state $ \oldState -> do
           return (removeClient uniqueID oldState)
 
-      setupChannel :: IO AMQ.Channel
-      setupChannel = do
-        (_, channel) <- createRabbitChannel rabbitConfig
-        _            <- AMQ.bindQueue channel rabbitQueue rabbitExchange rabbitKey
-        return channel
-
--- COPY/PASTE from Producer
+-- RABBIT
 
 -- | Opens a new connection to Rabbit and creates a new channel.
 createRabbitChannel :: RabbitConfig -> IO (AMQ.Connection, AMQ.Channel)

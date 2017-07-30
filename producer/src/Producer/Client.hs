@@ -30,7 +30,7 @@ clientConnection :: WS.ClientApp ()
 clientConnection connection = do
   _ <- clientConnected
   _ <- receiveAndPrintGreeting
-  forkIO $ forever $ sendToQueue
+  _ <- forkIO $ forever $ sendToQueue
   forever sendHeartBeat
   where
     clientConnected :: IO ()
@@ -68,4 +68,4 @@ clientConnection connection = do
 
     sleep :: Int -> IO ()
     sleep x =
-      threadDelay (x * (10 ^ 6))
+      threadDelay (x * ((10 :: Int) ^ (6 :: Int)))

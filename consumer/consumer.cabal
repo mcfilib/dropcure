@@ -28,6 +28,7 @@ library
                      , warp
                      , websockets
   default-language:    Haskell2010
+  ghc-options:         -Wall -Werror
 
 executable consumer
   hs-source-dirs:      app

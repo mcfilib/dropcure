@@ -4,7 +4,7 @@ module Consumer.Config where
 
 import           Data.Text (Text)
 import qualified Data.Text as T
-import           System.Environment (getArgs, lookupEnv)
+import           System.Environment (lookupEnv)
 
 -- INTERNAL
 

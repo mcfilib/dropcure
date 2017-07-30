@@ -2,6 +2,8 @@ module Consumer.Types where
 
 import Data.Text (Text)
 
+-- TYPES
+
 -- | Websocket server configuration data.
 data WSConfig =
   WSConfig { wsAddress :: String

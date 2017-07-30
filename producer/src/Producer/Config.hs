@@ -1,14 +1,14 @@
-module Dropcure.Config where
+module Producer.Config where
 
 -- EXTERNAL
 
 import           Data.Text (Text)
 import qualified Data.Text as T
-import           System.Environment (getArgs, lookupEnv)
+import           System.Environment (lookupEnv)
 
 -- INTERNAL
 
-import           Dropcure.Types
+import           Producer.Types
 
 getWsConfig :: IO WSConfig
 getWsConfig = do

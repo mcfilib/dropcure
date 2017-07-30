@@ -57,8 +57,6 @@ server = do
     serverStarting address port = putStrLn $
       "server starting on: " <> address <> ":" <> (show port)
 
---------------------------------------------------------------------------------
-
 -- | Opens a new connection to Rabbit and creates a new channel.
 createRabbitChannel :: RabbitConfig -> IO (AMQ.Connection, AMQ.Channel)
 createRabbitChannel RabbitConfig{..} = do
@@ -78,7 +76,7 @@ handleConnection rabbitConfig@RabbitConfig{..} pendingConnection = do
     publishFromWStoRabbit :: WS.Connection -> AMQ.Channel -> IO ()
     publishFromWStoRabbit connection channel = do
       WS.Text message _ <- WS.receiveDataMessage connection
-      AMQ.publishMsg channel rabbitExchange rabbitKey $
+      _                 <- AMQ.publishMsg channel rabbitExchange rabbitKey $
         AMQ.newMsg { AMQ.msgBody = message, AMQ.msgDeliveryMode = Just AMQ.Persistent }
       return ()
 
