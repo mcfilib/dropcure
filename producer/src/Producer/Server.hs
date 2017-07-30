@@ -10,6 +10,10 @@ import qualified Control.Retry as Retry
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Network.AMQP as AMQ
+import           Network.HTTP.Types (status400)
+import qualified Network.Wai as Wai
+import qualified Network.Wai.Handler.Warp as Warp
+import qualified Network.Wai.Handler.WebSockets as WaiWS
 import qualified Network.WebSockets as WS
 
 -- INTERNAL
@@ -20,9 +24,17 @@ import           Producer.Types
 server :: IO ()
 server = do
   rabbitConfig <- getRabbitConfig
-  attemptTo $ setupRabbit rabbitConfig
+  attemptTo (setupRabbit rabbitConfig)
   setupWebSocketServer rabbitConfig
   where
+    app :: RabbitConfig -> WS.ServerApp
+    app =
+      handleConnection
+
+    appFallback :: Wai.Application
+    appFallback _ respond =
+      respond (Wai.responseLBS status400 [] "server only talks websockets")
+
     attemptTo :: (Retry.RetryStatus -> IO a) -> IO a
     attemptTo =
       Retry.recoverAll (Retry.fibonacciBackoff 500000 <> Retry.limitRetries 10)
@@ -39,7 +51,7 @@ server = do
     setupWebSocketServer rabbitConfig = do
       WSConfig{..} <- getWsConfig
       serverStarting wsAddress wsPort
-      WS.runServer wsAddress wsPort (handleConnection rabbitConfig)
+      Warp.run wsPort (WaiWS.websocketsOr WS.defaultConnectionOptions (app rabbitConfig) appFallback)
 
     serverStarting :: String -> Int -> IO ()
     serverStarting address port = putStrLn $
@@ -56,7 +68,7 @@ createRabbitChannel RabbitConfig{..} = do
 
 -- | Handles an incoming Websocket connection and publishes incoming messages to
 -- the queue.
-handleConnection :: RabbitConfig -> WS.PendingConnection -> IO ()
+handleConnection :: RabbitConfig -> WS.ServerApp
 handleConnection rabbitConfig@RabbitConfig{..} pendingConnection = do
   connection <- WS.acceptRequest pendingConnection
   _          <- sendGreeting connection
