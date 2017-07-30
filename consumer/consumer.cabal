@@ -13,8 +13,20 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Lib
+  exposed-modules:     Consumer.Config
+                     , Consumer.Server
+                     , Consumer.Types
   build-depends:       base >= 4.7 && < 5
+                     , amqp
+                     , bytestring
+                     , containers
+                     , http-types
+                     , retry
+                     , text
+                     , wai
+                     , wai-websockets
+                     , warp
+                     , websockets
   default-language:    Haskell2010
 
 executable consumer
@@ -23,9 +35,6 @@ executable consumer
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , consumer
-                     , containers
-                     , text
-                     , websockets
   default-language:    Haskell2010
 
 test-suite consumer-test
