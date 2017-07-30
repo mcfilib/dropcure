@@ -64,10 +64,20 @@ as follows:
 
 ## Future Enhancements
 
-- [ ] Add more tests.
+### Functionality
+
 - [ ] Handle situation when RabbitMQ goes down.
+
+### Testing
+
+- [ ] Add more tests.
+- [ ] Add mocks to test `IO` without doing `IO` as outlined in [this blog post](https://lexi-lambda.github.io/blog/2017/06/29/unit-testing-effectful-haskell-with-monad-mock/).
+
+### Operations
+
 - [ ] Add Docker build image so that it doesn't rely on the host OS being the same as the target.
-- [ ] Shrink Docker image e.g. use Apline with `glibc` to keep the image sizes down.
+- [ ] Shrink Docker image e.g. use Alpine with `glibc` to keep the image sizes down.
+- [ ] Re-enable layer caching.
 
 ## Usage
 
@@ -77,7 +87,7 @@ have [Stack](https://docs.haskellstack.org/en/stable/README/) installed and have
 the [Docker](https://www.docker.com/) daemon running.
 
 ```
-$ make up                             # start necessary serices
+$ make up                             # start necessary services
 $ WEBSOCKET_PORT=8001 consumer client # run the consumer client
 $ WEBSOCKET_PORT=8000 producer client # run the producer client
 ```
