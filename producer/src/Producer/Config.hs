@@ -1,4 +1,4 @@
-module Producer.Config where
+module Dropcure.Config where
 
 -- EXTERNAL
 
@@ -8,7 +8,7 @@ import           System.Environment (getArgs, lookupEnv)
 
 -- INTERNAL
 
-import           Producer.Types
+import           Dropcure.Types
 
 getWsConfig :: IO WSConfig
 getWsConfig = do
@@ -52,27 +52,27 @@ defaultRabbitPassword =
 
 defaultRabbitExchange :: String
 defaultRabbitExchange =
-  "producer.exchange"
+  "dropcure.exchange"
 
 defaultRabbitKey :: String
 defaultRabbitKey =
-  "producer.key"
+  "dropcure.key"
 
 defaultRabbitQueue :: String
 defaultRabbitQueue =
-  "producer.queue"
+  "dropcure.queue"
 
 -- CONFIG : ENV
 
 -- | Websocket server address.
 getAddress :: IO String
 getAddress =
-  getConfig "PRODUCER_ADDRESS" defaultAddress
+  getConfig "WEBSOCKET_ADDRESS" defaultAddress
 
 -- | Websocket server port.
 getPort :: IO Int
 getPort =
-  getConfigInt "PRODUCER_PORT" defaultPort
+  getConfigInt "WEBSOCKET_PORT" defaultPort
 
 -- | Rabbit server address.
 getRabbitAddress :: IO String

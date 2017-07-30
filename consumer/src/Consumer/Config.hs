@@ -52,27 +52,27 @@ defaultRabbitPassword =
 
 defaultRabbitExchange :: String
 defaultRabbitExchange =
-  "producer.exchange"
+  "dropcure.exchange"
 
 defaultRabbitKey :: String
 defaultRabbitKey =
-  "producer.key"
+  "dropcure.key"
 
 defaultRabbitQueue :: String
 defaultRabbitQueue =
-  "producer.queue"
+  "dropcure.queue"
 
 -- CONFIG : ENV
 
 -- | Websocket server address.
 getAddress :: IO String
 getAddress =
-  getConfig "CONSUMER_ADDRESS" defaultAddress
+  getConfig "WEBSOCKET_ADDRESS" defaultAddress
 
 -- | Websocket server port.
 getPort :: IO Int
 getPort =
-  getConfigInt "CONSUMER_PORT" defaultPort
+  getConfigInt "WEBSOCKET_PORT" defaultPort
 
 -- | Rabbit server address.
 getRabbitAddress :: IO String
