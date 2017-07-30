@@ -13,3 +13,11 @@ services:
       - "broker"
     environment:
       - RABBIT_ADDRESS=172.19.0.1
+  consumer:
+    image: consumer:latest
+    ports:
+      - "8001:8000"
+    depends_on:
+      - "broker"
+    environment:
+      - RABBIT_ADDRESS=172.19.0.1
