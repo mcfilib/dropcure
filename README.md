@@ -19,7 +19,7 @@ a client and a server as a subcommand.
 The `producer` server operates as follows:
 
 - Wait for RabbitMQ service to become available.
-- Connect to RabbmitMQ server and create queue and channel if it doesn't exist.
+- Connect to RabbitMQ server and create queue and channel if it doesn't exist.
 - Disconnect from RabbitMQ.
 - On new websocket connection:
   - Connect to RabbitMQ.
