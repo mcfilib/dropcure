@@ -15,9 +15,9 @@ have [Stack](https://docs.haskellstack.org/en/stable/README/) installed and have
 the [Docker](https://www.docker.com/) daemon running.
 
 ```
-$ make up         # start necessary serices
-$ consumer client # run the consumer client
-$ producer client # run the producer client
+$ make up                             # start necessary serices
+$ WEBSOCKET_PORT=8001 consumer client # run the consumer client
+$ WEBSOCKET_PORT=8000 producer client # run the producer client
 ```
 
 ### Dependencies
