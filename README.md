@@ -62,6 +62,13 @@ as follows:
 - On new message emitted by the server:
   - Print it to `stdout`.
 
+## Future Enhancements
+
+- [ ] Add more tests.
+- [ ] Handle situation when RabbitMQ goes down.
+- [ ] Add Docker build image so that it doesn't rely on the host OS being the same as the target.
+- [ ] Shrink Docker image e.g. use Apline with `glibc` to keep the image sizes down.
+
 ## Usage
 
 The instructions below assume that you are
