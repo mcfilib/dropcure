@@ -14,6 +14,13 @@ import qualified Data.Text.IO as T
 import           Data.Unique (Unique, newUnique)
 import qualified Network.WebSockets as WS
 
+main :: IO ()
+main = do
+    state <- newMVar newServerState
+    WS.runServer "127.0.0.1" 9160 (app state)
+
+-- SERVER STATE
+
 type Client = (Unique, WS.Connection)
 
 type ServerState = DM.Map Unique WS.Connection
@@ -30,10 +37,16 @@ removeClient :: Unique -> ServerState -> ServerState
 removeClient uniqueID serverState =
   DM.delete uniqueID serverState
 
+-- WEBSOCKETS
+
 broadcast :: Text -> ServerState -> IO ()
 broadcast message clients = do
     forM_ clients $ \connection ->
       WS.sendTextData connection message
+
+listen :: WS.Connection -> MVar ServerState -> IO ()
+listen connection state = forever $ do
+    readMVar state >>= broadcast ("broadcasting" :: Text)
 
 app :: MVar ServerState -> WS.ServerApp
 app state pending = do
@@ -50,19 +63,9 @@ app state pending = do
       addListener uniqueID connection = do
         modifyMVar_ state $ \oldState ->
           return (addClient (uniqueID, connection) oldState)
-        listen connection state (uniqueID, connection)
+        listen connection state
 
       removeListenever :: Unique -> WS.Connection -> IO ()
       removeListenever uniqueID connection = do
         modifyMVar_ state $ \oldState -> do
           return (removeClient uniqueID oldState)
-
-
-listen :: WS.Connection -> MVar ServerState -> Client -> IO ()
-listen conn state (user, _) = forever $ do
-    readMVar state >>= broadcast ("hello" :: Text)
-
-main :: IO ()
-main = do
-    state <- newMVar newServerState
-    WS.runServer "127.0.0.1" 9160 (app state)
