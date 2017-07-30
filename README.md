@@ -22,6 +22,10 @@ $ producer client # run the producer client
 
 ### Dependencies
 
+- `docker`
+- `stack`
+- `ubuntu`
+
 ## Development
 
 ### Tasks
