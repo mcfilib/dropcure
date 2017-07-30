@@ -6,7 +6,6 @@ module Consumer.Client where
 -- EXTERNAL
 
 import           Control.Monad (forever)
-import           Data.Text (Text)
 import qualified Data.Text.IO as T
 import           Network.Socket (withSocketsDo)
 import qualified Network.WebSockets as WS
