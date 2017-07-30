@@ -43,7 +43,7 @@ The `consumer` server operates as follows:
 
 - Initialise an empty mapping between unique identifiers and websocket.
 - Wait for RabbitMQ service to become available.
-- Connect to RabbmitMQ server and create queue and channel if it doesn't exist.
+- Connect to RabbitMQ server and create queue and channel if it doesn't exist.
 - Subscribe to the queue.
 - On new websocket connection:
   - Create unique identifier.
