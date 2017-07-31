@@ -5,7 +5,7 @@ one library.
 
 - `producer` - publishes messages received on websockets to a message queue.
 - `consumer` - broadbasts messages from the message queue to clients connected via websockets.
-- `common` - shared code or both services.
+- `common` - shared code for both services.
 
 ## Overview
 
