@@ -1,6 +1,6 @@
 # dropcure
 
-`dropcure` is a toy project written in Haskell that consists of two services and
+`dropcure` was a take home assignment I did as part of a job interview that consists of two services and
 one library.
 
 - `producer` - publishes messages received on websockets to a message queue.
